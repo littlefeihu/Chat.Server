@@ -1,0 +1,17 @@
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.csprojResolveAssemblyReference.cache
+E:\工作\Chat.Server\ChatClient\obj\Debug\MainWindow.baml
+E:\工作\Chat.Server\ChatClient\obj\Debug\MainWindow.g.cs
+E:\工作\Chat.Server\ChatClient\obj\Debug\App.g.cs
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient_MarkupCompile.cache
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.g.resources
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.Properties.Resources.resources
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.csproj.GenerateResource.Cache
+E:\工作\Chat.Server\ChatClient\bin\Debug\ChatClient.exe.config
+E:\工作\Chat.Server\ChatClient\bin\Debug\ChatClient.exe
+E:\工作\Chat.Server\ChatClient\bin\Debug\ChatClient.pdb
+E:\工作\Chat.Server\ChatClient\bin\Debug\Microsoft.AspNet.SignalR.Client.dll
+E:\工作\Chat.Server\ChatClient\bin\Debug\Newtonsoft.Json.dll
+E:\工作\Chat.Server\ChatClient\bin\Debug\Microsoft.AspNet.SignalR.Client.xml
+E:\工作\Chat.Server\ChatClient\bin\Debug\Newtonsoft.Json.xml
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.exe
+E:\工作\Chat.Server\ChatClient\obj\Debug\ChatClient.pdb
