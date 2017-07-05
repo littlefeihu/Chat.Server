@@ -69,6 +69,15 @@
     <Content Include="Global.asax" />
     <Content Include="Login.aspx" />
     <Content Include="packages.config" />
+    <Content Include="OnlineChat.htm" />
+    <Content Include="Asserts\icon01.png" />
+    <Content Include="Asserts\jd_comm.js" />
+    <Content Include="Asserts\joya.js" />
+    <Content Include="Asserts\no-img_mid_.jpg" />
+    <Content Include="Asserts\s07.gif" />
+    <Content Include="Asserts\s21.gif" />
+    <Content Include="Asserts\s36.gif" />
+    <Content Include="Asserts\skin-min.css" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
