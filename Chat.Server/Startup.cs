@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 using Microsoft.Owin.Cors;
+using Microsoft.Owin.Security.Cookies;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.Identity;
 
 [assembly: OwinStartup(typeof(Chat.Server.Startup))]
 

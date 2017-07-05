@@ -13,10 +13,14 @@
 </head>
 <body>
     <p><strong>To connect the web client, reload this page after a server is started</strong></p>
+    <p>
+        <a href="Login.aspx">登录</a>
+    </p>
     <div class="container">
+        <input type="text" id="displayname" />
         <input type="text" id="message" />
         <input type="button" id="sendmessage" value="Send" />
-        <input type="hidden" id="displayname" />
+
         <ul id="discussion"></ul>
     </div>
 
@@ -37,7 +41,7 @@
             // Declare a proxy to reference the hub.
             var chat = $.connection.chatHub;
 
-            // Create a function that the hub can call to broadcast messages.
+            // 系统广播消息
             chat.client.addMessage = function (name, message) {
                 // Html encode display name and message.
                 var encodedName = $('<div />').text(name).html();
@@ -46,8 +50,22 @@
                 $('#discussion').append('<li><strong>' + encodedName
                     + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
             };
-            // Get the user name and store it to prepend to messages.
-            $('#displayname').val(prompt('Enter your name:', ''));
+
+            //对方回复
+            chat.client.reply = function (fromuserid, name, message) {
+                // Html encode display name and message.
+                var encodedName = $('<div />').text(name).html();
+                var encodedMsg = $('<div />').text(message).html();
+                // Add the message to the page.
+                $('#discussion').append('<li><strong>' + encodedName
+                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
+            };
+
+
+            chat.client.showErrorMessage = function (message) {
+                alert(message);
+            };
+
             // Set initial focus to message input box.
             $('#message').focus();
 
@@ -71,7 +89,7 @@
                 if (tryingToReconnect) {
                     setTimeout(function () {
                         $.connection.hub.start();
-                    }, 5000);
+                    }, 10000);
                 }
                 if ($.connection.hub.lastError) {
                     alert("Disconnected. Reason: " + $.connection.hub.lastError.message);
@@ -86,7 +104,7 @@
                 $('#sendmessage').click(function () {
 
                     // Call the Send method on the hub.
-                    chat.server.send($('#displayname').val(), $('#message').val());
+                    chat.server.sendChatMessage($('#displayname').val(), $('#message').val());
                     // Clear text box and reset focus for next comment.
                     $('#message').val('').focus();
                 });

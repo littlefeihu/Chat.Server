@@ -1,6 +1,10 @@
 E:\工作\Chat.Server\Chat.WebClient\bin\Chat.WebClient.dll.config
 E:\工作\Chat.Server\Chat.WebClient\bin\Chat.WebClient.dll
 E:\工作\Chat.Server\Chat.WebClient\bin\Chat.WebClient.pdb
+E:\工作\Chat.Server\Chat.WebClient\bin\Chat.Service.dll
+E:\工作\Chat.Server\Chat.WebClient\bin\Newtonsoft.Json.dll
+E:\工作\Chat.Server\Chat.WebClient\bin\Chat.Service.pdb
+E:\工作\Chat.Server\Chat.WebClient\bin\Newtonsoft.Json.xml
 E:\工作\Chat.Server\Chat.WebClient\obj\Debug\Chat.WebClient.csprojResolveAssemblyReference.cache
 E:\工作\Chat.Server\Chat.WebClient\obj\Debug\Chat.WebClient.dll
 E:\工作\Chat.Server\Chat.WebClient\obj\Debug\Chat.WebClient.pdb
