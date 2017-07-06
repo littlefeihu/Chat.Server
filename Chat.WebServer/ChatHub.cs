@@ -20,6 +20,102 @@ namespace Chat.WebServer
                 return (Context.User as DQPrincipal).UserData;
             }
         }
+
+        /// <summary>
+        /// 自动消息处理
+        /// </summary>
+        /// <param name="tousername"></param>
+        /// <param name="message"></param>
+        public void replyMessage(string tousername, Guid touserid, string message)
+        {
+
+            using (var db = new UserContext())
+            {
+                var targetUser = db.Users.FirstOrDefault(o => o.Id == CurrentUser.ID);
+                if (targetUser == null)
+                {
+                    Clients.Caller.showErrorMessage("用户不存在");
+                }
+                else
+                {
+                    targetUser.Connections.Where(c => c.Connected == true).ToList();
+
+                    if (targetUser.Connections == null)
+                    {
+                        Clients.Caller.showErrorMessage("用户不在线");
+                    }
+                    else
+                    {
+                        foreach (var connection in targetUser.Connections)
+                        {
+                            Clients.Client(connection.ConnectionID).reply(touserid.ToString("N"), tousername, message);
+                        }
+                        db.MsgRecords.Add(new MsgRecord
+                        {
+                            Sended = false,
+                            LastUpdatedOn = DateTime.Now,
+                            Content = message,
+                            FromUserID = touserid,
+                            ToUserID = CurrentUser.ID
+                        });
+                        db.SaveChanges();
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 给指定的用户发送消息
+        /// </summary>
+        /// <param name="tousername"></param>
+        /// <param name="message"></param>
+        public void sendMessage(string tousername, Guid touserid, string message)
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                ///如果消息为空，则发送自动消息
+                replyMessage(tousername, touserid, "您好");
+            }
+            else
+            {
+                using (var db = new UserContext())
+                {
+                    var targetUser = db.Users.FirstOrDefault(o => o.Id == touserid);
+                    if (targetUser == null)
+                    {
+                        Clients.Caller.showErrorMessage("用户不存在");
+                    }
+                    else
+                    {
+                        targetUser.Connections.Where(c => c.Connected == true).ToList();
+
+                        if (targetUser.Connections == null)
+                        {
+                            Clients.Caller.showErrorMessage("用户不在线");
+                        }
+                        else
+                        {
+                            foreach (var connection in targetUser.Connections)
+                            {
+                                Clients.Client(connection.ConnectionID).reply(CurrentUser.ID.ToString("N"), CurrentUser.Name, message);
+                            }
+                            db.MsgRecords.Add(new MsgRecord
+                            {
+                                Sended = false,
+                                LastUpdatedOn = DateTime.Now,
+                                Content = message,
+                                FromUserID = CurrentUser.ID,
+                                ToUserID = targetUser.Id
+                            });
+                            db.SaveChanges();
+                        }
+                    }
+                }
+            }
+        }
+
+
         /// <summary>
         /// 给指定的用户发送消息
         /// </summary>
@@ -117,17 +213,17 @@ namespace Chat.WebServer
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            SetConnected();
+            SetDisConnected();
             return base.OnDisconnected(stopCalled);
         }
         public override Task OnReconnected()
         {
-            SetConnected();
+            SetDisConnected();
             return base.OnReconnected();
         }
 
 
-        private void SetConnected()
+        private void SetDisConnected()
         {
             using (var db = new UserContext())
             {
@@ -136,10 +232,8 @@ namespace Chat.WebServer
                 {
                     connection.Connected = false;
                     connection.LastUpdatedOn = DateTime.Now;
-
                     db.SaveChanges();
                 }
-
             }
         }
 
@@ -148,8 +242,6 @@ namespace Chat.WebServer
             using (var db = new UserContext())
             {
                 db.MsgRecords.Where(o => o.LastUpdatedOn > DateTime.Now.AddHours(-24));
-
-
             }
         }
     }
