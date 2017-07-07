@@ -7,3 +7,4 @@ E:\工作\Chat.Server\Chat.Data\bin\Debug\EntityFramework.xml
 E:\工作\Chat.Server\Chat.Data\bin\Debug\EntityFramework.SqlServer.xml
 E:\工作\Chat.Server\Chat.Data\obj\Debug\Chat.Data.dll
 E:\工作\Chat.Server\Chat.Data\obj\Debug\Chat.Data.pdb
+E:\工作\Chat.Server\Chat.Data\obj\Debug\Chat.Data.csprojResolveAssemblyReference.cache

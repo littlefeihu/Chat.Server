@@ -57,6 +57,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="msg.mp4" />
+    <Content Include="msg.ogg" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -68,6 +70,9 @@
     <Content Include="Default.html" />
     <Content Include="Global.asax" />
     <Content Include="Login.aspx" />
+    <Content Include="msg.mp3" />
+    <Content Include="msg.wav" />
+    <Content Include="NotifyTest.html" />
     <Content Include="packages.config" />
     <Content Include="OnlineChat.htm" />
     <Content Include="Asserts\icon01.png" />
@@ -79,6 +84,7 @@
     <Content Include="Asserts\s36.gif" />
     <Content Include="Asserts\skin-min.css" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
+    <Content Include="Scripts\iNotify.min.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
     <Content Include="Scripts\jquery.signalR-2.2.2.js" />

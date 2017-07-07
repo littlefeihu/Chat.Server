@@ -4,4 +4,3 @@ E:\工作\Chat.Server\Chat.Service\bin\Debug\Newtonsoft.Json.dll
 E:\工作\Chat.Server\Chat.Service\bin\Debug\Newtonsoft.Json.xml
 E:\工作\Chat.Server\Chat.Service\obj\Debug\Chat.Service.dll
 E:\工作\Chat.Server\Chat.Service\obj\Debug\Chat.Service.pdb
-E:\工作\Chat.Server\Chat.Service\obj\Debug\Chat.Service.csprojResolveAssemblyReference.cache

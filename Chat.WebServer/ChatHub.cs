@@ -1,6 +1,7 @@
 ﻿using Chat.Data;
 using Chat.Service.Authentication;
 using Microsoft.AspNet.SignalR;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Chat.WebServer
     public class ChatHub : Hub
     {
 
+        private static object connectedLock = new object();
         public SimpleUser CurrentUser
         {
             get
@@ -26,40 +28,39 @@ namespace Chat.WebServer
         /// </summary>
         /// <param name="tousername"></param>
         /// <param name="message"></param>
-        public void replyMessage(string tousername, Guid touserid, string message)
+        public void replyMessage(string tousername, string touserid, string message)
         {
 
             using (var db = new UserContext())
             {
-                var targetUser = db.Users.FirstOrDefault(o => o.Id == CurrentUser.ID);
+                var targetUser = db.Users.FirstOrDefault(o => o.UserName == CurrentUser.Name);
                 if (targetUser == null)
                 {
                     Clients.Caller.showErrorMessage("用户不存在");
                 }
                 else
                 {
-                    targetUser.Connections.Where(c => c.Connected == true).ToList();
-
-                    if (targetUser.Connections == null)
+                    var onlineClients = targetUser.Connections.Where(c => c.Connected == true).ToList();
+                    var isOnline = true;
+                    if (onlineClients == null || onlineClients.Count == 0)
                     {
-                        Clients.Caller.showErrorMessage("用户不在线");
+                        Clients.Caller.notOnline("对方不在线");
+                        isOnline = false;
                     }
-                    else
+                    var dt = string.Format("{0:t}", DateTime.Now);
+                    foreach (var connection in onlineClients)
                     {
-                        foreach (var connection in targetUser.Connections)
-                        {
-                            Clients.Client(connection.ConnectionID).reply(touserid.ToString("N"), tousername, message);
-                        }
-                        db.MsgRecords.Add(new MsgRecord
-                        {
-                            Sended = false,
-                            LastUpdatedOn = DateTime.Now,
-                            Content = message,
-                            FromUserID = touserid,
-                            ToUserID = CurrentUser.ID
-                        });
-                        db.SaveChanges();
+                        Clients.Client(connection.ConnectionID).reply(touserid, tousername, message, dt, "new");
                     }
+                    db.MsgRecords.Add(new MsgRecord
+                    {
+                        Sended = isOnline,
+                        LastUpdatedOn = DateTime.Now,
+                        Content = message,
+                        FromUserID = touserid,
+                        ToUserID = CurrentUser.Name
+                    });
+                    db.SaveChanges();
                 }
             }
         }
@@ -70,46 +71,46 @@ namespace Chat.WebServer
         /// </summary>
         /// <param name="tousername"></param>
         /// <param name="message"></param>
-        public void sendMessage(string tousername, Guid touserid, string message)
+        public void sendMessage(string tousername, string touserid, string message)
         {
-            if (string.IsNullOrEmpty(message))
+            using (var db = new UserContext())
             {
-                ///如果消息为空，则发送自动消息
-                replyMessage(tousername, touserid, "您好");
-            }
-            else
-            {
-                using (var db = new UserContext())
+                var targetUser = db.Users.FirstOrDefault(o => o.UserName == touserid);
+                if (targetUser == null)
                 {
-                    var targetUser = db.Users.FirstOrDefault(o => o.Id == touserid);
-                    if (targetUser == null)
+                    Clients.Caller.showErrorMessage("用户不存在");
+                }
+                else
+                {
+                    var onlineClients = targetUser.Connections.Where(c => c.Connected == true).ToList();
+                    var isOnline = true;
+                    if (onlineClients == null || onlineClients.Count == 0)
                     {
-                        Clients.Caller.showErrorMessage("用户不存在");
+                        Clients.Caller.notOnline("对方不在线");
+                        isOnline = false;
+                    }
+
+                    if (string.IsNullOrEmpty(message))
+                    {
+                        ///如果消息为空，则发送自动消息
+                        replyMessage(tousername, touserid, "您好");
                     }
                     else
                     {
-                        targetUser.Connections.Where(c => c.Connected == true).ToList();
-
-                        if (targetUser.Connections == null)
+                        var dt = string.Format("{0:t}", DateTime.Now);
+                        foreach (var connection in onlineClients)
                         {
-                            Clients.Caller.showErrorMessage("用户不在线");
+                            Clients.Client(connection.ConnectionID).reply(CurrentUser.Name, CurrentUser.Name, message, dt, "new");
                         }
-                        else
+                        db.MsgRecords.Add(new MsgRecord
                         {
-                            foreach (var connection in targetUser.Connections)
-                            {
-                                Clients.Client(connection.ConnectionID).reply(CurrentUser.ID.ToString("N"), CurrentUser.Name, message);
-                            }
-                            db.MsgRecords.Add(new MsgRecord
-                            {
-                                Sended = false,
-                                LastUpdatedOn = DateTime.Now,
-                                Content = message,
-                                FromUserID = CurrentUser.ID,
-                                ToUserID = targetUser.Id
-                            });
-                            db.SaveChanges();
-                        }
+                            Sended = isOnline,
+                            LastUpdatedOn = DateTime.Now,
+                            Content = message,
+                            FromUserID = CurrentUser.Name,
+                            ToUserID = targetUser.UserName
+                        });
+                        db.SaveChanges();
                     }
                 }
             }
@@ -142,15 +143,15 @@ namespace Chat.WebServer
                     {
                         foreach (var connection in targetUser.Connections)
                         {
-                            Clients.Client(connection.ConnectionID).reply(CurrentUser.ID, CurrentUser.Name, message);
+                            Clients.Client(connection.ConnectionID).reply(CurrentUser.ID, CurrentUser.Name, message, "new");
                         }
                         db.MsgRecords.Add(new MsgRecord
                         {
                             Sended = false,
                             LastUpdatedOn = DateTime.Now,
                             Content = message,
-                            FromUserID = CurrentUser.ID,
-                            ToUserID = targetUser.Id
+                            FromUserID = CurrentUser.Name,
+                            ToUserID = targetUser.UserName
                         });
                         db.SaveChanges();
                     }
@@ -182,35 +183,54 @@ namespace Chat.WebServer
 
         public override Task OnConnected()
         {
-            using (var db = new UserContext())
+
+            SetConnected();
+
+            var records = GetRecentContacts();
+
+            foreach (var record in records)
             {
-                var user = db.Users.SingleOrDefault(u => u.Id == CurrentUser.ID);
-
-                if (user == null)
-                {
-                    user = new User
-                    {
-                        UserName = CurrentUser.Name,
-                        Alias = CurrentUser.Alias,
-                        Id = CurrentUser.ID,
-                        Connections = new List<Connection>()
-                    };
-                    db.Users.Add(user);
-                }
-
-                user.Connections.Add(new Connection
-                {
-                    ConnectionID = Context.ConnectionId,
-                    UserAgent = Context.Request.Headers["User-Agent"],
-                    Connected = true,
-                    LastUpdatedOn = DateTime.Now
-                });
-                db.SaveChanges();
+                var dt = string.Format("{0:t}", record.LastUpdatedOn);
+                Clients.Caller.reply(record.FromUserID, record.FromUserID, record.Content, dt, "history");
             }
 
             return base.OnConnected();
         }
 
+
+        private void SetConnected()
+        {
+            lock (connectedLock)
+            {
+                using (var db = new UserContext())
+                {
+                    var user = db.Users.SingleOrDefault(u => u.UserName == CurrentUser.Name);
+
+                    if (user == null)
+                    {
+                        user = new User
+                        {
+                            UserName = CurrentUser.Name,
+                            Alias = CurrentUser.Alias,
+                            Id = CurrentUser.ID == Guid.Empty ? Guid.NewGuid() : CurrentUser.ID,
+                            Connections = new List<Connection>()
+                        };
+                        db.Users.Add(user);
+
+                    }
+
+                    user.Connections.Add(new Connection
+                    {
+                        ConnectionID = Context.ConnectionId,
+                        UserAgent = Context.Request.Headers["User-Agent"],
+                        Connected = true,
+                        LastUpdatedOn = DateTime.Now
+                    });
+
+                    db.SaveChanges();
+                }
+            }
+        }
         public override Task OnDisconnected(bool stopCalled)
         {
             SetDisConnected();
@@ -237,11 +257,22 @@ namespace Chat.WebServer
             }
         }
 
-        private void GetRecentContacts()
+        private List<MsgRecord> GetRecentContacts()
         {
             using (var db = new UserContext())
             {
-                db.MsgRecords.Where(o => o.LastUpdatedOn > DateTime.Now.AddHours(-24));
+
+                var records = db.Database.SqlQuery<MsgRecord>(@"select * from (
+SELECT  [Id]
+      ,[FromUserID]
+      ,[ToUserID]
+      ,[Content]
+      ,[Sended]
+      ,[LastUpdatedOn],ROW_NUMBER() over(partition by fromuserid order by LastUpdatedOn desc) as rows 
+  FROM [dbo].[MsgRecord] where  ToUserID=" + CurrentUser.Name + ") as a where a.rows=1").ToList();
+
+                return records;
+
             }
         }
     }

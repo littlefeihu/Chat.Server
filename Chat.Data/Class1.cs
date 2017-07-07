@@ -69,9 +69,9 @@ namespace Chat.Data
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public Guid FromUserID { get; set; }
+        public string FromUserID { get; set; }
 
-        public Guid ToUserID { get; set; }
+        public string ToUserID { get; set; }
 
         public string Content { get; set; }
 
